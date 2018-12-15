@@ -1,0 +1,36 @@
+#sfalNatMap{
+  position: relative;
+  width: 100%;
+}
+#mapToolTip{
+  position: absolute;
+  left:-1000px;
+  padding: 10px;
+  background: #464646;
+  pointer-events: none;
+  font-family: Arial; 
+  color: #fff; 
+  border-radius: 5px;
+}
+#mapToolTip .mapToolTipNumber{
+  font-size:20px;
+  font-weight: bold;
+  color: #e99138;
+}
+#mapToolTip .mapToolTipName {
+    display: block;
+    font-size: 12px;
+}
+#mapToolTip:after, #mapToolTip:before {
+  top: 100%;
+  left: 50%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+  border-top-color: #464646;
+  border-width: 10px;
+  margin-left: -10px;
+}

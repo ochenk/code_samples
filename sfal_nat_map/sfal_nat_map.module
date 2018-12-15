@@ -1,0 +1,26 @@
+<?php
+
+/**
+ * Implements hook_theme()
+ *
+ * @param $existing
+ * @param $type
+ * @param $theme
+ * @param $path
+ *
+ * @return array
+ */
+function sfal_nat_map_theme($existing, $type, $theme, $path) {
+  // Have to use static methods in .module file. No DI for you.
+  $config = \Drupal::config('sfal_nat_map.adminsettings');
+  $default_year = $config->get('sfal_nat_map_default_year');
+
+  return [
+    'homeNatMap' => [
+      'variables' => [
+        'description' => [],
+        'default_year' => $default_year,
+      ],
+    ],
+  ];
+}

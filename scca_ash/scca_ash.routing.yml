@@ -1,0 +1,60 @@
+
+scca_ash.scca_ash_index:
+  path: 'ash'
+  defaults:
+    _controller: '\Drupal\scca_ash\ASHController::index'
+    _title: 'ASH'
+  requirements:
+    _permission: 'access content'
+  options:
+    _custom_theme: 'scca_ash_2018'
+
+scca_ash.scca_ash_blog_post:
+  path: 'ash/news/{post}'
+  defaults:
+    _controller: '\Drupal\scca_ash\ASHController::blogPost'
+    _title: 'ASH'
+  requirements:
+    _permission: 'access content'
+  options:
+    _custom_theme: 'scca_ash_2018'
+
+scca_ash.scca_ash_abstract:
+  path: 'ash/abstract/{id}'
+  defaults:
+    _controller: '\Drupal\scca_ash\ASHController::abstractData'
+    _title: 'ASH'
+  requirements:
+    _permission: 'access content'
+  options:
+    _custom_theme: 'scca_ash_2018'
+
+scca_ash.scca_ash_who_is:
+  path: 'ash/who-is-scca'
+  defaults:
+    _controller: '\Drupal\scca_ash\ASHController::whoIsSCCA'
+    _title: 'ASH'
+  requirements:
+    _permission: 'access content'
+  options:
+    _custom_theme: 'scca_ash_2018'
+
+scca_ash.scca_ash_careers:
+  path: 'ash/careers'
+  defaults:
+    _controller: '\Drupal\scca_ash\ASHController::careers'
+    _title: 'ASH'
+  requirements:
+    _permission: 'access content'
+  options:
+    _custom_theme: 'scca_ash_2018'
+
+scca_ash.scca_ash_press:
+  path: 'ash/press'
+  defaults:
+    _controller: '\Drupal\scca_ash\ASHController::press'
+    _title: 'ASH'
+  requirements:
+    _permission: 'access content'
+  options:
+    _custom_theme: 'scca_ash_2018'

@@ -1,0 +1,5 @@
+services:
+  theme.negotiator.scca_ash:
+    class: Drupal\scca_ash\Theme\ThemeNegotiator
+    tags:
+    - { name: 'theme_negotiator', priority: -50 }

@@ -1,0 +1,6 @@
+sfal_nat_map.admin_settings_form:  
+  title: 'National Map Settings'  
+  route_name: sfal_nat_map.admin_settings_form  
+  description: 'National Map Settings'  
+  parent: system.admin_config_system  
+  weight: 99  

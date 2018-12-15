@@ -1,0 +1,36 @@
+<div id="ash2018-blog-post-wrapper">
+    <div id="ash2018-blog-post-inner-wrapper">
+        <div id="ash2018-blog-post-title">{{ post.title.value }}</div>
+
+        {%- if post.field_conf_blog_post_feat_vid is not empty -%}
+            {{ drupal_field('field_conf_blog_post_feat_vid', 'node', post.id()) }}
+        {%- endif -%}
+
+        <div id="ash2018-blog-post-body">
+            <div id="ash2018-blog-post-body-text" class="ash2018-blog-post-body-col">
+                {{ post.body.value|raw }}
+                {%- if post.field_conf_blog_post_file is not empty -%}
+                    <a href="{{ file_url(post.field_conf_blog_post_file.entity.uri.value) }}"
+                       class="btn btn-secondary ash2018-blog-post-download">Download Story</a>
+                {%- endif -%}
+            </div>
+            {%- if post.field_conf_blog_post_assets is not empty or post.field_conf_blog_post_feat_img is not empty -%}
+                <div id="ash2018-blog-post-body-assets" class="ash2018-blog-post-body-col">
+
+                    {%- if post.field_conf_blog_post_feat_img is not empty -%}
+                        <div id="ash2018-blog-post-feature-image" class="ash2018-blog-post-body-assets-item"><img
+                                    src="{{ file_url(post.field_conf_blog_post_feat_img.entity.uri.value) }}"/>
+                        </div>
+                    {%- endif -%}
+                    {% for item in post.field_conf_blog_post_assets %}
+                        <div class="ash2018-blog-post-body-assets-item">
+                            {{ drupal_entity('paragraph', item.target_id) }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {%- endif -%}
+        </div>
+
+    </div>
+</div>
+

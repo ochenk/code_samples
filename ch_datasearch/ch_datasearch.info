@@ -1,0 +1,4 @@
+name = CH Data2020 Search
+description = A Module that generates and manages the Data2020 Search page
+package = CH
+core = 7.x

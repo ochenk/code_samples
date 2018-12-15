@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * Implements hook_theme().
+ */
+function scca_ash_theme() {
+    return [
+        'scca_ash_speakers_block' => [
+            'template' => 'scca_ash_speakers_block',
+            'variables' => [
+                'speakers' => NULL,
+            ],
+        ],
+        'scca_ash_blog_post' => [
+            'template' => 'scca_ash_blog_post',
+            'variables' => [
+                'post' => NULL,
+            ],
+        ],
+    ];
+}

@@ -1,0 +1,12 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ */
+function ch_datasearch_schema() {
+  // create cache table
+  $schema = [];
+  $schema['cache_ch_datasearch'] = drupal_get_schema_unprocessed('system', 'cache');
+  return $schema;
+}
+

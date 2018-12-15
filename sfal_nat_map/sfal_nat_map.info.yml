@@ -1,0 +1,8 @@
+name: SFAL National Map
+description: The National Map for the SFAL site
+core: 8.x
+package: SFAL
+dependencies:
+  - node
+  - block
+type: module

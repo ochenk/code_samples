@@ -1,0 +1,809 @@
+<?php
+
+$cache_enable=FALSE;
+
+/**
+ * Implements hook_menu().
+ */
+function ch_datasearch_menu() {
+  $items = array();
+
+  $items['2020/data-search'] = array(
+    'title' => 'HP2020 Objective Search',
+    'description' => 'HP2020 Objective Search Landing Page',
+    'page callback' => 'ch_datasearch_landing_page',
+    'access callback' => TRUE
+  );
+  $items['2020/data-search/Search-the-Data'] = array(
+    'title' => 'HP2020 Objective Search',
+    'description' => 'HP2020 Objective Search',
+    'page callback' => 'ch_datasearch_pagebuild',
+    'access callback' => TRUE
+  );
+  $items['2020/data-search/Search-the-Data/results'] = array(
+    'title' => 'HP2020 Objective Search Results',
+    'description' => 'HP2020 Objective Search Results',
+    'page callback' => 'ch_datasearch_results_pane',
+    'page arguments' => array(4),
+    'access callback' => TRUE,
+  );
+  $items['2020/data-search/Search-the-Data/results-datatable/%'] = array(
+    'title' => 'HP2020 Objective Search Results Data Table',
+    'description' => 'HP2020 Objective Search Results Data Table',
+    'page callback' => 'ch_datasearch_results_pane_datatable',
+    'page arguments' => array(4,5),
+    'access callback' => TRUE,
+  );
+  $items['2020/data-search/Search-the-Data/getobjtitle/%'] = array(
+    'title' => 'HP2020 Objective Search Get Objective Title',
+    'description' => 'HP2020 Objective Search Get Objective Title',
+    'page callback' => 'ch_datasearch_get_obj_title',
+    'page arguments' => array(4),
+    'access callback' => TRUE,
+  );
+  $items['admin/clear_datatable_cache'] = array(
+    'title' => 'Clear 2020 Datatable Cache',
+    'description' => 'Clear 2020 Datatable Cache',
+    'page callback' => 'ch_datasearch_clear_datatable_cache',
+    'access callback' => 'ch_datasearch_check_user_has_role',
+    'access arguments' => array(array('administrator', 'Wave Manager', 'Objective Manager', 'Objective Editor')),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_preprocess_html().
+ */
+function ch_datasearch_preprocess_html(&$vars) {
+  $path = drupal_get_path_alias();
+  $aliases = explode('/', $path);
+  if($aliases[1]=="data-search"){
+    $vars['classes_array'][] = "objective-search";
+    drupal_add_js(drupal_get_path('module', 'ch_datasearch') . "/data-search.js");
+    drupal_add_css(drupal_get_path('module', 'ch_datasearch') . "/data-search.css");
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function ch_datasearch_theme(){
+  return array(
+    'ch_datasearch_landing' => array(
+      'variables' => array('content' => NULL),
+      'template' => 'ch_datasearch_landing',
+      'path' => drupal_get_path('module', 'ch_datasearch'),
+    ),
+    'ch_datasearch' => array(
+      'variables' => array('content' => NULL),
+      'template' => 'ch_datasearch',
+      'path' => drupal_get_path('module', 'ch_datasearch'),
+    ),
+    'ch_datasearch_results' => array(
+      'variables' => array('content' => NULL),
+      'template' => 'ch_datasearch_results',
+      'path' => drupal_get_path('module', 'ch_datasearch'),
+    ),
+    'ch_datasearch_results_datatable' => array(
+      'variables' => array('content' => NULL),
+      'template' => 'ch_datasearch_results_datatable',
+      'path' => drupal_get_path('module', 'ch_datasearch'),
+    )
+  );
+}
+
+
+/**
+ * Populate landing page filters.
+ */
+function ch_datasearch_landing_page(){
+  $content['filters']['topics'] = ch_datasearch_filter_topics(); 
+  $content['filters']['sources'] = ch_datasearch_filter_sources();
+  return theme('ch_datasearch_landing', array('content' => $content));
+}
+
+/**
+ * Populate search filters.
+ */
+function ch_datasearch_pagebuild(){
+  $content['filters']['topics'] = ch_datasearch_filter_topics(); 
+  $content['filters']['sources'] = ch_datasearch_filter_sources();
+  $content['filters']['sld'] = ch_datasearch_filter_sld();
+  $content['filters']['sex'] = ch_datasearch_filter_sex();
+  $content['filters']['age'] = ch_datasearch_filter_age();
+  return theme('ch_datasearch', array('content' => $content));
+}
+
+/**
+ * Helper function to print objective title.
+ */
+function ch_datasearch_get_obj_title($obj_id){
+  $objresult = db_query("select title from node o where o.nid=:nid limit 0,1", array(':nid'=>$obj_id));
+  $obj = $objresult->fetchAssoc();
+  print($obj['title']);
+}
+
+/**
+ * Populate topics array.
+ */
+function ch_datasearch_filter_topics(){
+  $topics=array();
+  $objresult = db_query("select 
+      t.nid as 'nid', 
+      t.title as 'title', 
+      count(o.title) as 'objcount'
+    from 
+      node as t, 
+      node as o, 
+      field_data_field_topic_area as ta,
+      field_data_field_obj_searchable as s
+    where 
+      o.status=1 
+      and t.status = 1 
+      and o.type='objective' 
+      and t.type='topic' 
+      and o.nid=ta.entity_id 
+      and ta.field_topic_area_target_id=t.nid
+      and o.nid = s.entity_id
+      and s.field_obj_searchable_value = 1
+    group BY
+      t.nid
+    order by 
+    t.title");
+
+  while($record = $objresult->fetchAssoc()) {
+    $topics[] = array('id'=>$record['nid'],'title'=>$record['title'],'objcount'=>$record['objcount'],);
+  }
+  return $topics;
+}
+
+/**
+ * Populate sources array.
+ */
+function ch_datasearch_filter_sources(){
+  $sources=array();
+  $objresult = db_query("select 
+      s.nid, 
+      s.title, 
+      count(o.nid) objcount 
+    from 
+      node o, 
+      field_data_field_data_sources ds, 
+      node s 
+    where 
+      o.nid = ds.entity_id 
+      and ds.field_data_sources_target_id=s.nid 
+      and o.status=1 
+    group by 
+      s.nid 
+    order by 
+      s.title
+    ");
+
+  while($record = $objresult->fetchAssoc()) {
+    $sources[] = array('id'=>$record['nid'],'title'=>$record['title'],'objcount'=>$record['objcount'],);
+  }
+  return $sources;
+}
+
+/**
+ * Populate SLD array.
+ */
+function ch_datasearch_filter_sld(){
+  $sld=array();
+  $sldresults = db_query("select 
+    el.*, count(distinct loc.entity_id) as objcount 
+    from eck_locality el 
+    join field_data_field_sld_locality loc on loc.field_sld_locality_target_id=el.id
+    where el.fipscode > -1
+    group by el.id
+  ");
+  while($record = $sldresults->fetchAssoc()) {
+    $sld[] = array('id'=>$record['id'],'title'=>$record['title'],'objcount'=>$record['objcount'],'fipscode'=>$record['fipscode'],);
+  }
+  return $sld;
+}
+
+/**
+ * Populate Sex array.
+ */
+function ch_datasearch_filter_sex(){
+  $sex=array();
+  $sexresults = db_query("
+    SELECT count(entity_id) total, 
+      sum(case when field_obj_sex_target_id=542 then 1 else 0 end) male, 
+      sum(case when field_obj_sex_target_id=543 then 1 else 0 end) female 
+    FROM 
+      field_data_field_obj_sex");
+  while($record = $sexresults->fetchAssoc()) {
+    $sex['total'] = $record['total'];
+    $sex['female'] = $record['female'];
+    $sex['male'] = $record['male'];
+  }
+  return $sex;
+}
+
+/**
+ * Populate Age array.
+ */
+function ch_datasearch_filter_age(){
+  $age=array();
+  $ageresults = db_query("
+    select 
+      age.field_obj_age_group_target_id id, 
+      tax.name name, 
+      count(age.entity_id) objcount 
+    from 
+      field_data_field_obj_age_group age 
+      left join taxonomy_term_data tax on age.field_obj_age_group_target_id=tax.tid 
+      join field_data_field_obj_searchable search on age.entity_id=search.entity_id 
+    where 
+      search.field_obj_searchable_value=1 
+    group by 
+      field_obj_age_group_target_id
+    ");
+  while($record = $ageresults->fetchAssoc()) {
+    $age[] = array('id'=>$record['id'],'name'=>$record['name'],'objcount'=>$record['objcount']);
+
+  }
+  return $age;
+}
+
+/**
+ * Master objective results function.
+ */
+function ch_datasearch_results_pane(){
+
+  $queryOffset = 0;
+  $curPage=1;
+  if(arg(4)){
+    $curPage=arg(4);
+    $queryOffset = (arg(4)-1)*10;
+  }
+
+  $query = db_select('node', 'o');
+  $query->join('field_data_field_topic_area','ta', 'o.nid=ta.entity_id ');
+  $query->join('node','t', 'ta.field_topic_area_target_id=t.nid');
+  $query->join('field_data_field_obj_searchable','s', 'o.nid = s.entity_id');
+  $query->join('field_data_field_sort','sort', 'o.nid = sort.entity_id');
+  $query->join('field_data_field_long_title','lt', 'o.nid = lt.entity_id');
+  $query->leftJoin('field_data_field_is_lhi_story','lhi', 'o.nid = lhi.entity_id');
+  $query->leftJoin('field_data_field_full_description','fulldesc', 'o.nid = fulldesc.entity_id');
+  $query->leftJoin('field_data_field_hp2020_baseline','baseline', 'o.nid = baseline.entity_id');
+  $query->leftJoin('field_data_field_baseline_year','baseyear', 'o.nid = baseyear.entity_id');
+  $query->leftJoin('field_data_field_obj_has_2020_data','has2020data', 'o.nid = has2020data.entity_id');
+  $query->leftJoin('field_data_field_data_sources_label','sources', 'o.nid = sources.entity_id');
+  $query->leftJoin('field_data_field_hp2020_target','target', 'o.nid = target.entity_id');
+  $query->leftJoin('field_data_field_desired_direction','entdir', 'o.nid = entdir.entity_id');
+  $query->leftJoin('taxonomy_term_data','direction', 'entdir.field_desired_direction_target_id = direction.tid');
+  $query->leftJoin('field_data_field_changed_since_launch', 'revised', 'revised.entity_id=o.nid');
+  $query->leftJoin('eck_revision_log', 'eckrevision', 'eckrevision.hp2020id=o.title');// and revision.exp_date > UNIX_TIMESTAMP(NOW())');
+
+  $query->addField('o','nid','obj_id');
+  $query->addField('o','title','obj_title');
+  $query->addField('t','title','topic_title');
+  $query->addField('lt','field_long_title_value','obj_long_title');
+  $query->addField('lhi','field_is_lhi_story_value','is_lhi');
+  $query->addField('fulldesc','field_full_description_value','full_description');
+  $query->addField('baseline','field_hp2020_baseline_value','baseline');
+  $query->addField('baseyear','field_baseline_year_value','baseline_year');
+  $query->addField('has2020data','field_obj_has_2020_data_value','has_2020_data');
+  $query->addField('sources','field_data_sources_label_value','sources');
+  $query->addField('target','field_hp2020_target_value','target');
+  $query->addField('direction','name','direction');
+  $query->addField('revised', 'field_changed_since_launch_value', 'revised');
+  $query->addField('eckrevision', 'disposition_code', 'revision_code');
+  $query->addField('eckrevision', 'exp_date', 'expdate');
+
+
+  $subquery = db_select('eck_state_level_mapping_data', 'eckmap');
+  $subquery->addExpression("max(cyear)", 'cyear');
+  $subquery->addField('eckmap', 'hp2020id', 'hp2020_id');
+  $subquery->groupBy('eckmap.hp2020id');
+  if($_GET['statemap']){
+    $query->join($subquery, 'map', 'map.hp2020_id=o.title');
+  }else{
+    $query->addJoin('LEFT OUTER', $subquery, 'map', 'map.hp2020_id=o.title');
+  }
+  $query->addField('map','cyear','cyear');
+
+
+  if($_GET['objid']){
+    $query->condition('o.nid', $_GET['objid']);
+  }  
+  if($_GET['ta']){
+    $tids=split(",",$_GET['ta']);
+    $query->condition('t.nid', $tids, "IN");
+  }  
+  if($_GET['src']){
+    $srcids=split(",",$_GET['src']);
+    $query->join('field_data_field_data_sources','datasource', 'o.nid=datasource.entity_id');
+    $query->join('node','src', 'src.nid=datasource.field_data_sources_target_id');
+    $query->condition('src.nid', $srcids, "IN");
+  }  
+  if(strlen($_GET['sld'])>0){
+    $slds=split(",",$_GET['sld']);
+    $query->join('field_data_field_sld_locality','loc', 'loc.entity_id=o.nid');
+    $query->join('eck_locality','el', 'el.id=loc.field_sld_locality_target_id');
+    $query->condition('el.fipscode', $slds, "IN");
+  }  
+  if($_GET['sex']){
+    $sex=split(",",$_GET['sex']);
+    $query->join('field_data_field_obj_sex','sex', 'sex.entity_id=o.nid');
+    $query->condition('sex.field_obj_sex_target_id', $sex, "IN");
+  }  
+  if($_GET['age']){
+    $age=split(",",$_GET['age']);
+    $query->join('field_data_field_obj_age_group','age', 'age.entity_id=o.nid');
+    $query->condition('age.field_obj_age_group_target_id', $age, "IN");
+  }
+  if($_GET['lhi']){
+    $query->join('field_data_field_is_lhi_story', 'lhi', 'lhi.entity_id=o.nid');
+    $query->condition('lhi.field_is_lhi_story_value', "1", "=");
+    $query->condition('lhi.bundle', "objective", "=");
+  }
+  if($_GET['mes']){
+    $query->join('field_data_field_obj_has_2020_data', 'mes', 'mes.entity_id=o.nid');
+    $query->condition('mes.field_obj_has_2020_data_value', "1", "=");
+  }
+  if($_GET['hdisp']){
+    $query->join('eck_disparities_data_summary', 'dis', 'o.title=dis.hp2020id');
+  }
+  if($_GET['srch']){
+    $query->leftJoin('field_data_field_objective_parent','par', 'o.nid = par.entity_id');
+    $query->leftJoin('node','paro', 'paro.nid = par.field_objective_parent_target_id');
+    $query->leftJoin('field_data_field_long_title','parlt', 'paro.nid = parlt.entity_id');
+
+    $query->where("((replace(lt.field_long_title_value,'-',' ') like '%" . $_GET['srch'] . "%') or (replace(parlt.field_long_title_value,'-',' ') like '%" . $_GET['srch'] . "%'))");
+  }
+
+  $query->groupBy('o.nid');
+
+  $query->condition('o.type','objective')
+    ->condition('s.field_obj_searchable_value',1)
+    ->condition('sort.bundle','objective')
+    ->orderBy('t.title','ASC')
+    ->orderBy('sort.field_sort_value','ASC')
+    ;
+  $result = $query->execute();
+
+  $srclist = array();
+  $returnCount=0;
+  $queryString='';
+  $currentPage=0;
+
+  $retInc=0;
+  while($record = $result->fetchAssoc()) {
+    if($retInc<$queryOffset){
+      $retInc++;
+      continue;
+    }else if($retInc>=$queryOffset+10){
+      break;
+    }else{
+      $retInc++;
+    }
+
+    if($cache = cache_get('obj-'.$record['obj_id'], 'cache_ch_datasearch')) {
+      print theme('ch_datasearch_results', array('content' => $cache->data));
+    }else{
+
+      $dir = file_stream_wrapper_get_instance_by_uri('public://')->realpath() . "/data_files/";
+      $filename = $record['obj_title'] .'-data.xlsx';
+      $path = $dir . $filename;
+      $filesize="approx. 100 KB";
+      $fsbool=filesize($path);
+      if($fsbool){
+        $filesize=$fsbool;
+      }
+      $record['filesize'] = dp_formatSizeUnits($filesize);
+
+      $fns = db_query("
+        SELECT * FROM eck_footnote_association fna 
+        join eck_footnote fn on fna.footnote_target_id=fn.id 
+        where objective_nid = :objid 
+        group by footnote_number
+        order by footnote_number", array(':objid' => $record['obj_id']));
+      while($fn = $fns->fetchAssoc()) {
+        $record['footnotes'][] = array('fipscode'=>$fn['fipscode'],'number'=>$fn['footnote_number'],'text'=>$fn['title'],);
+        if(!$fn['pgid'] && !$fn['year']){
+          $record['footnotes']['target'][] = array('fntext'=>$fn['title'], 'fnnumber'=>$fn['footnote_number'], 'fnfipscode'=>$fn['fipscode']);
+        }
+      }
+
+      $record['topic_title_despaced'] = str_replace(" ", "-", $record['topic_title']);
+      $record['topic_title_despaced'] = str_replace(str_split('\',&'), "", $record['topic_title_despaced']);
+      $record['topic_title_despaced'] = str_replace("--", "-", $record['topic_title_despaced']);
+      $record['direction_despaced'] = str_replace(" ", "-", $record['direction']);
+      $record['return_count'] = $result->rowCount();
+      $tempGet = $_GET;
+      unset($tempGet['q']);
+      $record['query_string'] = http_build_query($tempGet);
+      $record['query_offset'] = $queryOffset;
+      $record['current_page'] = $curPage;
+
+      $returnCount=$record['return_count'];
+      $queryString=$record['query_string'];
+      $queryOffset=$record['query_offset'];
+      $currentPage=$record['current_page'];
+
+      if(($record['expdate'] > 0) && ($record['expdate'] < time())){
+        $record['revision_code'] = NULL;
+      }
+
+      cache_set('obj-'.$record['obj_id'], $record, 'cache_ch_datasearch');
+      
+      print theme('ch_datasearch_results', array('content' => $record));
+
+    }
+  }
+
+  print("
+    <div style='display:none;' class='dp-return-count' value='".$result->rowCount()."'></div>
+    <div style='display:none;' class='dp-query-string' value='".http_build_query($tempGet)."'></div>
+    <div style='display:none;' class='dp-query-offset' value='".$queryOffset."'></div>
+    <div style='display:none;' class='dp-current-page' value='".$curPage."'></div>
+    ");
+
+  $result = filterQuery()->execute();
+
+  $tnids = array();
+  $srcids = array();
+  $sldids = array();
+  $sexes = array();
+  $ages = array();
+  $lhis = array();
+  $meses = array();
+
+  $taresult = filterQuery('ta')->execute();
+  while($r = $taresult->fetchAssoc()){
+    foreach(explode('|', $r['tnids']) as $id){
+      $tnids['id-'.$id][] = $id;
+    }
+  }
+  $srcresult = filterQuery('src')->execute();
+  while($r = $srcresult->fetchAssoc()){
+    foreach(explode('|', $r['srcids']) as $id){
+      $srcids['id-'.$id][] = $id;
+    }
+  }
+  $sldresult = filterQuery('sld')->execute();
+  while($r = $sldresult->fetchAssoc()){
+    foreach(explode('|', $r['sldids']) as $id){
+      $sldids['id-'.$id][] = $id;
+    }
+  }
+  $sexresult = filterQuery('sex')->execute();
+  while($r = $sexresult->fetchAssoc()){
+    foreach(explode('|', $r['sexes']) as $id){
+      $sexes['id-'.$id][] = $id;
+    }
+  }
+  $ageresult = filterQuery('age')->execute();
+  while($r = $ageresult->fetchAssoc()){
+    foreach(explode('|', $r['ages']) as $id){
+      $ages['id-'.$id][] = $id;
+    }
+  }
+
+  while($r = $result->fetchAssoc()){
+    foreach(array('lhis', 'meses') as $ftype){
+      foreach(explode('|', $r[$ftype]) as $id){
+        ${"{$ftype}"}['id-'.$id][] = $id;
+      }
+    }
+  }
+
+  $tnidgang = "";
+  foreach($tnids as $k=>$v){
+    $cleankey = str_replace('id-','',$k);
+    if(strlen($cleankey)>0){$tnidgang .= str_replace('id-','',$k) . "," . count($v) . "|";}
+  }
+  $srcgang = "";
+  foreach($srcids as $k=>$v){
+    $cleankey = str_replace('id-','',$k);
+    if(strlen($cleankey)>0){$srcgang .= str_replace('id-','',$k) . "," . count($v) . "|";}
+  }
+  $sldgang = "";
+  foreach($sldids as $k=>$v){
+    $cleankey = str_replace('id-','',$k);
+    if(strlen($cleankey)>0){$sldgang .= str_replace('id-','',$k) . "," . count($v) . "|";}
+  }
+  $sexgang = "";
+  foreach($sexes as $k=>$v){
+    $cleankey = str_replace('id-','',$k);
+    if(strlen($cleankey)>0){$sexgang .= str_replace('id-','',$k) . "," . count($v) . "|";}
+  }
+  $agegang = "";
+  foreach($ages as $k=>$v){
+    $cleankey = str_replace('id-','',$k);
+    if(strlen($cleankey)>0){$agegang .= str_replace('id-','',$k) . "," . count($v) . "|";}
+  }
+  $lhigang = "";
+  foreach($lhis as $k=>$v){
+    $cleankey = str_replace('id-','',$k);
+    if(strlen($cleankey)>0){$lhigang .= str_replace('id-','',$k) . "," . count($v) . "|";}
+  }
+  print("<div style='display:none;' class='dp-filter-topic-area'>".$tnidgang."</div>");
+  print("<div style='display:none;' class='dp-filter-source'>".$srcgang."</div>");
+  print("<div style='display:none;' class='dp-filter-sld'>".$sldgang."</div>");
+  print("<div style='display:none;' class='dp-filter-sex'>".$sexgang."</div>");
+  print("<div style='display:none;' class='dp-filter-age'>".$agegang."</div>");
+  print("<div style='display:none;' class='dp-filter-lhi'>".$lhigang."</div>");
+
+}
+
+/**
+ * Master data table function.
+ */
+function ch_datasearch_results_pane_datatable($obj_id, $fipscode){
+  if($fipscode==NULL){$fipscode='-1';}
+  $fipsArray = array('-1', '0', $fipscode);
+  $record = [];
+
+  if($cache = cache_get('obj-'.$obj_id . '-fips-' . $fipscode, 'cache_ch_datasearch')) {
+    print theme('ch_datasearch_results_datatable', array('content' => $cache->data));
+  }else{
+
+
+    $query = db_select('eck_data_point', 'dp');
+    $query->leftJoin('field_data_field_sld_locality','loc', 'dp.hp2020_node_id = loc.entity_id');
+    $query->leftJoin('eck_locality','el', 'el.id = loc.field_sld_locality_target_id');
+    $query->fields('el',array('title', 'abbreviation', 'fipscode'));
+    $query->condition('dp.hp2020_node_id', $obj_id, '=');
+    $query->orderBy('el.fipscode','ASC');
+    $loc_result = $query->execute();
+
+    while($loc = $loc_result->fetchAssoc()) {
+      $record['locs'][$loc['title']]['fipscode'] = $loc['fipscode'];
+      if($loc['fipscode'] === $fipscode){
+        $record['displayFipsKey'] = $loc['title'];
+      }
+    }
+
+    $record['displayFips'] = $fipscode;
+
+    if((!array_key_exists('United States', $record['locs'])) && (array_key_exists('All Reporting States', $record['locs']))){
+      $record['nationalFipsKey'] = 'All Reporting States';
+      $record['nationalFips'] = 0;
+      if($fipscode <= 0){
+        $record['displayFipsKey'] = $record['nationalFipsKey'];
+        $record['displayFips'] = $record['nationalFips'];
+        $fipscode = 0;
+      }
+    }else{
+      $record['nationalFipsKey'] = 'United States';
+      $record['nationalFips'] = -1;
+    }
+
+    $fns = db_query("
+      SELECT * FROM eck_footnote_association fna 
+      join eck_footnote fn on fna.footnote_target_id=fn.id 
+      where objective_nid = :objid 
+      order by footnote_number", array(':objid' => $obj_id));
+    while($fn = $fns->fetchAssoc()) {
+      if($fn['pgid']>0){
+        $record['footnotes']['popgroup']['pop-'.$fn['pgid']][] = array('fntext'=>$fn['title'], 'fnnumber'=>$fn['footnote_number'], 'fnfipscode'=>$fn['fipscode']);
+      }else if($fn['year']){
+        $record['footnotes'][$fn['year']]['fn-'.$fn['footnote_number']] = array('fntext'=>$fn['title'], 'fnnumber'=>$fn['footnote_number'], 'fnfipscode'=>$fn['fipscode']);
+      }else{
+        $record['footnotes']['target'][] = array('fntext'=>$fn['title'], 'fnnumber'=>$fn['footnote_number'], 'fnfipscode'=>$fn['fipscode']);
+      }
+    }
+
+
+    $query = db_select('eck_data_point', 'dp');
+    $query->join('field_data_field_locality','loc', 'dp.id = loc.entity_id');
+    $query->join('eck_locality','el', 'el.id = loc.field_locality_target_id');
+    $query->leftJoin('eck_disparities_data_summary', 'dis', 'dp.hp2020_id=dis.hp2020id and dp.pgid=dis.pgid and dp.begyear=dis.year and dp.endyear=dis.endyear');
+
+    $query->fields('dp',array('hp2020_node_id', 'begyear', 'endyear', 'lowerci', 'upperci', 'stderr', 'estimate', 'pgid', 'pid', 'spid', 'sspid', 'poptitle'));
+    $query->fields('el',array('title', 'abbreviation', 'fipscode'));  
+    $query->fields('dis',array('id'));
+
+    $query->condition('dp.hp2020_node_id', $obj_id, '=');
+    $query->condition('el.fipscode', $fipsArray, 'IN');
+
+    $query->orderBy('cast(dp.pgid as DECIMAL(8,4))','ASC');
+    $query->orderBy('cast(dp.pid as unsigned)','ASC');
+    $query->orderBy('cast(dp.spid as unsigned)','ASC');
+    $query->orderBy('dp.begyear','ASC');
+
+    $data_result = $query->execute();
+
+    while($datapoint = $data_result->fetchAssoc()) {
+      if($datapoint['begyear'] != $datapoint['endyear']){
+        $year = $datapoint['begyear'] . "-" . $datapoint['endyear'];
+      }else{
+        $year = $datapoint['begyear'];
+      }
+      $record['years'][$year] = $year;
+      $record['years'][$year]['begyear'] = $datapoint['begyear'];
+      $record['years'][$year]['endyear'] = $datapoint['endyear'];
+      if($datapoint['fipscode'] == $fipscode){
+        $record['fipsyears'][$year]['displayyear'] = $year;
+        $record['fipsyears'][$year]['begyear'] = $datapoint['begyear'];
+        $record['fipsyears'][$year]['endyear'] = $datapoint['endyear'];
+      }
+
+      if($datapoint['pid']==0){$level=0;}elseif($datapoint['spid']==0){$level=1;}elseif($datapoint['sspid']==0){$level=2;}
+      $record['data'][$datapoint['title']][$datapoint['poptitle']."|".$level][$year] = array("stderr"=>$datapoint['stderr'], "upperci"=>$datapoint['upperci'], "lowerci"=>$datapoint['lowerci'], "estimate"=>$datapoint['estimate'], "indentlevel" => $level);
+      $record['data'][$datapoint['title']][$datapoint['poptitle']."|".$level]['indentlevel'] = $level;
+      $record['data'][$datapoint['title']][$datapoint['poptitle']."|".$level]['category'] = $datapoint['pgid'];
+      if($datapoint['id']){
+        $record['data'][$datapoint['title']][$datapoint['poptitle']."|".$level]['disparities'] = $datapoint['id'];
+      }
+      $record['obj_id'] = $obj_id;
+      $record['data'][$datapoint['title']][$datapoint['poptitle']."|".$level]['chart'] = FALSE;
+
+    }
+
+    asort($record['years']);
+    asort($record['fipsyears']);
+    $lastcat=-1;
+    $cattitle="";
+
+    foreach($record['data'] as $mainfipkey=>$mainfip){
+      foreach($mainfip as $catkey=>$category){
+        if($lastcat != $category['category']){
+          $lastcat = $category['category'];
+          $cattitle = $catkey;
+        }
+        foreach($category as $yearkey=>$year){
+          if(is_numeric($yearkey) && is_numeric($year['estimate'])){
+            $record['data'][$mainfipkey][$catkey]['chart']=TRUE;
+            $record['data'][$mainfipkey][$cattitle]['chart']=TRUE;
+            break;
+          }
+        }
+      }
+    }
+
+    if($fipscode>0){
+      $yearMatchUS = count(array_intersect_key($record['data'][$record['displayFipsKey']]['Total|0'],$record['data']['United States']['Total|0']));
+      $yearMatchARS = count(array_intersect_key($record['data'][$record['displayFipsKey']]['Total|0'],$record['data']['All Reporting States']['Total|0']));
+      if($yearMatchARS > $yearMatchUS){
+        $record['nationalFipsKey'] = 'All Reporting States';
+        $record['nationalFips'] = 0;
+      }else{
+        $record['nationalFipsKey'] = 'United States';
+        $record['nationalFips'] = -1;
+      }
+    }
+    
+    cache_set('obj-'.$obj_id . '-fips-' . $fipscode, $record, 'cache_ch_datasearch');
+
+    print theme('ch_datasearch_results_datatable', array('content' => $record));
+
+  }
+}
+
+/**
+ * Helper function to dislpay file size.
+ */
+function dp_formatSizeUnits($bytes){
+  if ($bytes >= 1073741824){
+      $bytes = number_format($bytes / 1073741824, 2) . ' GB';
+  }elseif ($bytes >= 1048576){
+      $bytes = number_format($bytes / 1048576, 2) . ' MB';
+  }elseif ($bytes >= 1024){
+      $bytes = number_format($bytes / 1024, 2) . ' KB';
+  }elseif ($bytes > 1){
+      $bytes = $bytes . ' bytes';
+  }elseif ($bytes == 1){
+      $bytes = $bytes . ' byte';
+  }
+  return $bytes;
+}
+
+/**
+ * Dynamic filter update.
+ */
+function filterQuery($exclude){
+
+  if($cache = cache_get('filter-ta'.$_GET['ta'] . 'src'.$_GET['src'] . 'sld'.$_GET['sld'] . 'sex'.$_GET['sex'] . 'age'.$_GET['age'] . 'lhi'.$_GET['lhi'] . 'mes'.$_GET['mes'] . 'statemap'.$_GET['statemap'] . 'hdisp'.$_GET['hdisp'] . 'srch'.$_GET['srch'] . 'ex' . $exclude)) {
+    return $cache->data;
+  }else{
+
+    $query = db_select('node', 't');
+    $query->join('field_data_field_topic_area','obto', 'obto.field_topic_area_target_id=t.nid');
+    $query->join('node','o', 'o.nid=obto.entity_id');
+    $query->join('field_data_field_obj_searchable','s', 'o.nid=s.entity_id and s.field_obj_searchable_value=1');
+    $query->leftJoin('field_data_field_data_sources', 'datasrc', 'o.nid=datasrc.entity_id');
+    $query->leftJoin('node', 'src', 'src.nid=datasrc.field_data_sources_target_id');
+    $query->leftJoin('field_data_field_sld_locality', 'loc', 'loc.entity_id = o.nid');
+    $query->leftJoin('eck_locality', 'el', 'el.id = loc.field_sld_locality_target_id');
+    $query->leftJoin('field_data_field_obj_sex', 'sex', 'sex.entity_id=o.nid');
+    $query->leftJoin('field_data_field_obj_age_group', 'age', 'age.entity_id=o.nid');
+    $query->leftJoin('field_data_field_is_lhi_story', 'lhi', 'lhi.entity_id=o.nid');
+    $query->leftJoin('field_data_field_obj_has_2020_data', 'mes', 'mes.entity_id=o.nid');
+
+    $query->condition('t.type', 'topic'); 
+    $query->condition('t.status', '1'); 
+    $query->condition('o.type', 'objective'); 
+    $query->condition('o.status', '1'); 
+    $query->groupBy('o.nid');
+
+    $query->addExpression("group_concat(distinct t.nid ORDER BY t.nid ASC SEPARATOR '|')", 'tnids');
+    $query->addExpression("group_concat(distinct src.nid ORDER BY src.nid ASC SEPARATOR '|')", 'srcids');
+    $query->addExpression("group_concat(distinct el.fipscode ORDER BY el.fipscode ASC SEPARATOR '|')", 'sldids');
+    $query->addExpression("group_concat(distinct sex.field_obj_sex_target_id ORDER BY sex.field_obj_sex_target_id ASC SEPARATOR '|')", 'sexes');
+    $query->addExpression("group_concat(distinct age.field_obj_age_group_target_id ORDER BY age.field_obj_age_group_target_id ASC SEPARATOR '|')", 'ages');
+    $query->addExpression("group_concat(distinct lhi.field_is_lhi_story_value ORDER BY lhi.field_is_lhi_story_value ASC SEPARATOR '|')", 'lhis');
+    $query->addExpression("group_concat(distinct mes.field_obj_has_2020_data_value ORDER BY mes.field_obj_has_2020_data_value ASC SEPARATOR '|')", 'meses');
+
+    if(($_GET['objid']) && ($exclude != "objid")){
+      $query->condition('o.nid', $_GET['objid']);
+    }  
+    if(($_GET['ta']) && ($exclude != "ta")){
+      $tids=split(",",$_GET['ta']);
+      $query->condition('t.nid', $tids, "IN");
+    }
+    if(($_GET['src']) && ($exclude != "src")){
+      $srcids=split(",",$_GET['src']);
+      $query->condition('src.nid', $srcids, "IN");
+    }  
+    if(($_GET['sld']) && ($exclude != "sld")){
+      $sldids=split(",",$_GET['sld']);
+      $query->condition('el.fipscode', $sldids, "IN");
+    }  
+    if(($_GET['sex']) && ($exclude != "sex")){
+      $sexids=split(",",$_GET['sex']);
+      $query->condition('sex.field_obj_sex_target_id', $sexids, "IN");
+    }  
+    if(($_GET['age']) && ($exclude != "age")){
+      $ageids=split(",",$_GET['age']);
+      $query->condition('age.field_obj_age_group_target_id', $ageids, "IN");
+    }
+    if(($_GET['lhi']) && ($exclude != "lhi")){
+      $query->condition('lhi.field_is_lhi_story_value', "1", "=");
+      $query->condition('lhi.bundle', "objective", "=");
+    }
+    if(($_GET['mes']) && ($exclude != "mes")){
+      $query->condition('mes.field_obj_has_2020_data_value', "1", "=");
+    }
+    if(($_GET['statemap']) && ($exclude != "statemap")){
+      $subquery = db_select('eck_state_level_mapping_data', 'eckmap');
+      $subquery->addExpression("max(cyear)", 'cyear');
+      $subquery->addField('eckmap', 'hp2020id', 'hp2020_id');
+      $subquery->groupBy('eckmap.hp2020id');
+      $query->join($subquery, 'map', 'map.hp2020_id=o.title');
+    }
+    if($_GET['hdisp']){
+      $query->join('eck_disparities_data_summary', 'dis', 'o.title=dis.hp2020id');
+    }
+    if(($_GET['srch']) && ($exclude != "srch")){
+      $query->leftJoin('field_data_field_long_title','lt', 'o.nid = lt.entity_id');
+      $query->condition('lt.field_long_title_value', '%' . $_GET['srch'] . '%', 'LIKE');
+    }
+    cache_set('filter-ta'.$_GET['ta'] . 'src'.$_GET['src'] . 'sld'.$_GET['sld'] . 'sex'.$_GET['sex'] . 'age'.$_GET['age'] . 'lhi'.$_GET['lhi'] . 'mes'.$_GET['mes'] . 'statemap'.$_GET['statemap'] . 'hdisp'.$_GET['hdisp'] . 'srch'.$_GET['srch'] . 'ex' . $exclude, $query, 'cache_ch_datasearch');
+      return $query;  
+    }
+}
+
+
+/**
+ * Datatable clear cache bin.
+ */
+function ch_datasearch_clear_datatable_cache(){
+  cache_clear_all("*", "cache_ch_datasearch", true);
+  drupal_set_message(t("Cache cleared from all 2020 data search tables"));
+  drupal_goto("");
+  //print("gotcha 2");
+}
+
+/**
+ * Menu access callback.
+ */
+function ch_datasearch_check_user_has_role($roles = array()) {
+  global $user;
+  $userroles = array_values($user->roles);
+  foreach ($roles as $role) {
+    if(array_search($role, $userroles)){
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+

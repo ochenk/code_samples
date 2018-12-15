@@ -1,0 +1,77 @@
+{% for speaker in speakers %}
+    <div id="speaker-{{ speaker.nid }}"></div>
+    <div class="ash2018_speaker_card ash2018-search-item">
+        <div class="ash2018_speaker_card_speaker_info">
+            {%- if speaker.image -%}
+                <div class="ash2018_speaker_card_image"><img src="{{ speaker.image }}"></div>
+            {%- endif -%}
+            <div class="ash2018_speaker_card_text">
+                <div class="ash2018_speaker_card_name">{{ speaker.name }}</div>
+                <div class="ash2018_speaker_card_title">{{ speaker.title|raw }}</div>
+                <div class="ash2018_speaker_card_summary">{{ speaker.summary|raw }}</div>
+                <div class="ash2018_speaker_card_links">
+                    <a href="{{ speaker.url }}" class="btn btn-secondary" target="_new">Full Profile</a>
+                    {%- if speaker.doximity is not empty -%}
+                        <a href="{{ speaker.doximity }}" class="btn btn-doximity" target="_new">Connect on Doximity <img
+                                    class="ash2018_speaker_card_links_doximity_bug"
+                                    src="/themes/custom/scca_ash_2018/images/doximity_bug.png"></a>
+                    {%- endif -%}
+                </div>
+            </div>
+        </div>
+        <div class="ash2018_speaker_card_abstracts">
+            {% for abstract in speaker.abstracts %}
+                <div class="ash2018_speaker_card_abstracts_abstract">
+                    <div class="ash2018_speaker_card_abstracts_header">
+                        <div class="ash2018_speaker_card_abstracts_header_title">{{ abstract.title }}</div>
+                        <div class="ash2018_speaker_card_abstracts_header_details">
+                            <a href="#" drawer-target="ash2018_speaker_drawer_{{ speaker.id }}_{{ abstract.id }}">Details
+                                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                            </a>
+                        </div>
+                        <div class="ash2018_speaker_card_abstracts_header_close">
+                            <a href="#" drawer-target="ash2018_speaker_drawer_{{ speaker.id }}_{{ abstract.id }}">Close
+                                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+                        </div>
+                    </div>
+
+
+                    <div id="ash2018_speaker_drawer_{{ speaker.id }}_{{ abstract.id }}" class="ash2018_speaker_card_abstracts_drawer">
+                        <div class="ash2018_abstract_preview_title">
+                            {{ abstract.title }}
+                            {%- if abstract.subtitle is not empty -%}
+                                <span class="ash2018_abstract_preview_subtitle"> :
+                                    {{ abstract.subtitle }}
+                                </span>
+                            {%- endif %}
+
+                        </div>
+                        <div class="ash2018_abstract_preview_content">
+                            <div class="ash2018_abstract_preview_type">{{ abstract.type }}</div>
+                            <div class="ash2018_abstract_preview_location">{{ abstract.location }}</div>
+                            <div class="ash2018_abstract_preview_summary">{{ abstract.summary|raw }}</div>
+
+                            <div class="ash2018_abstract_preview_links">
+                                <a href="#" class="btn btn-secondary ash2018-link-abstract-full" abstract-id="{{ abstract.id }}">Full Abstract</a>
+
+                                {%- if abstract.video is not empty -%}
+                                    <a href="#" class="btn btn-secondary ash2018-link-abstract-video">Video Recording</a>
+                                {%- endif %}
+                                {%- if abstract.poster is not empty -%}
+                                    <a href="#" class="btn btn-secondary ash2018-link-abstract-download">Download Poster</a>
+                                {%- endif %}
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+{% endfor %}
+
+
+

@@ -1,0 +1,19 @@
+sfal_nat_map.admin_settings_form:  
+  path: '/admin/config/sfal_nat_map/adminsettings'  
+  defaults:  
+    _form: '\Drupal\sfal_nat_map\Form\MessagesForm'  
+    _title: 'National Map Settings'  
+  requirements:  
+    _permission: 'set default year'  
+  options:  
+    _admin_route: TRUE
+
+sfal_nat_map.mapapi:
+  path: '/national_map_data_2/{year}/{category}/{subcategory}'
+  defaults:
+    _controller: '\Drupal\sfal_nat_map\Controller\apiController::index'
+    year: 'all'
+    category: 'all'
+    subcategory: 'all'
+  requirements:
+    _permission: 'access content'

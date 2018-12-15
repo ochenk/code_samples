@@ -1,0 +1,3 @@
+set default year:
+  title: 'Set Default Year'
+  description: 'Set the default year for SFAL maps and pages.'
