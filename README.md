@@ -9,7 +9,7 @@
     To highlight and promote its offerings at the conference, SCCA created a micro-site presenting all SCCA
     speakers, abstracts, and trials, as well as regular news stories and blog posts during the event.
     * **My role**: Sole developer. Backend and frontend.
-    * **[Code Sample](https://github.com/ochenk/code_samples/scca_ash)**
+    * **[Code Sample](https://github.com/ochenk/code_samples/tree/master/1_scca_ash)**
         * One of the technical requirements of the ASH micro-site project was to keep the development work separate enough 
     that it could be disabled or replicated easily once the conference was over, so all the backend code is contained 
     within this one module and all the frontend work is within a corresponding custom theme.
@@ -22,7 +22,7 @@
     * **Project Description**: A small Drupal 8 site that collects and displays current and historical state firearm laws.
     The maps are created using the [D3.js](https://d3js.org/) data visualization library. 
     * **My role**: Senior back-end developer. Map creation. Data migration. 
-    * **[Code Sample](https://github.com/ochenk/code_samples/sfal_nat_map)**
+    * **[Code Sample](https://github.com/ochenk/code_samples/tree/master/2_sfal_nat_map)**
         * This module manages the map on the [home page](https://statefirearmlaws.org/) and on the [national
         data](https://statefirearmlaws.org/national-data) page of the [State Firearm Laws](https://statefirearmlaws.org/) site. 
         Includes the map itself and the corresponding api, forms, display, and config.
@@ -37,7 +37,7 @@
     and benchmarks to measure the health of the country. The Healthy People site is the warehouse for 
     the collected data and related material.
     * **My role**: Senior Developer and Architect.
-    * **[Code Sample](https://github.com/ochenk/code_samples#ch_datasearch)**
+    * **[Code Sample](https://github.com/ochenk/code_samples/tree/master/3_ch_datasearch)**
         * This manages the entire [Data Search](https://www.healthypeople.gov/2020/data-search/Search-the-Data) section of the
         [Health People](https://www.healthypeople.gov) site. (It's a Drupal 7 site, in case that's of any maintenance value.)
         * **Things of mild interest**:
