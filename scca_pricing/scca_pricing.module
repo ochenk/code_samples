@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * Implements hook_theme().
+ */
+function scca_pricing_theme() {
+  return [
+    'scca_pricing_search' => [
+      'template' => 'scca_pricing_search',
+      'variables' => [
+        'vars' => NULL,
+      ],
+    ],
+    'scca_pricing_search_results' => [
+      'template' => 'scca_pricing_search_results',
+      'variables' => [
+        'vars' => NULL,
+      ],
+    ],
+  ];
+}

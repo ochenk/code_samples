@@ -1,0 +1,55 @@
+.deam-site-alert {
+  align-items: center;
+  color: #0f191c;
+  display: flex;
+  font-family: "Roboto", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+  text-transform: uppercase;
+  width: 100%;
+}
+.deam-site-alert.notice {
+  background-color: #a8f2ff;
+}
+
+.deam-site-alert.emergency {
+  background-color: #fb5a47;
+}
+
+.deam-site-alert.emergency span.alert-title:before {
+  content: url("/themes/custom/ohana_museum/dist/img/icon-warning.png");
+  vertical-align: -15%;
+  padding-right: 10px;
+}
+
+.deam-site-alert.notice span.alert-title:before {
+  content: url("/themes/custom/ohana_museum/dist/img/icon-info.png");
+  vertical-align: -15%;
+  padding-right: 10px;
+}
+
+.alert-title {
+  margin-right: 5px;
+}
+
+.alert-message {
+  margin-right: 10px;
+}
+
+.alert-link {
+  text-decoration: underline;
+  color: #0f191c;
+}
+
+.deam-site-alert__content {
+  flex: 0 0 84%;
+}
+
+.deam-alert-close {
+  content: url("/themes/custom/ohana_museum/dist/img/icon-close.png");
+  vertical-align: -15%;
+  padding-right: 10px;
+}

@@ -2,7 +2,38 @@
 
 ## Code Samples
 
-* ASH Micro-site [(live site)](https://www.seattlecca.org/ash)
+* DEA Museum Sitewide Alert [(live site pending)](#) - Drupal 9 custom module
+    * **Client**: U.S. Drug Enforcement Agency Museum and Visitors Cente
+    * **Project Description**: The DEA Museum site needed a site-wide alert that would show on the top of
+    every page when needed. This is a common request, but none of the Drupal contrib modules were able to do
+    what was needed here, so I built a custom version. Via an admin interface, a content admin can 
+    add an alert, set the type, and add relevant content. It is shown to the user until the user dismisses it.
+    A cookie is set to remember the dismissed state. Custom cache rules are set so that this can 
+    dynamically coexist with highly-cached pages. The cache is busted if any content in the alert is edited.
+    * **My role**: Sole developer. Backend.
+    * **[Code Sample](https://github.com/ochenk/code_samples/tree/master/deam_site_alert)**       
+        * **Things of mild interest**: 
+            * Backend: Caching and busting, admin forms. 
+            * Frontend: Cookie management.
+
+* SCCA Pricing [(live site)](https://www.seattlecca.org/new-patient-documents) - Drupal 8 custom module
+    * **Client**: Seattle Cancer Care Alliance
+    * **Project Description**: The U.S. government requires hospitals to publish pricing data on all their products and
+    services. It must be in a "machine readable" format. Usually hospitals just dump CSV or PDF docs on hidden pages and leave
+    it at that. We found that patients often wanted
+    to look up items that they see on their bills, so we built a search interface for pricing items,
+    and the ability to download search results. Because there can be hundreds of thousands of 
+    pricing items, I created a custom entity type, to avoid the unnecessary overhead of nodes. To see this in 
+    action, go to the [(live site)](https://www.seattlecca.org/new-patient-documents), scroll down to 
+    "Search pricing" and try entering terms, such as "blood" or "87015".
+    * **My role**: Sole developer. Backend and frontend.
+    * **[Code Sample](https://github.com/ochenk/code_samples/tree/master/scca_pricing)**       
+        * **Things of mild interest**: 
+            * Backend: Custom entity with full crud integrations, custom search api queries, entity mass edit. 
+            * Frontend: Custom jQuery HTML-to-CSV function.
+
+
+* ASH Micro-site [(live site)](https://www.seattlecca.org/ash) - Drupal 8 custom module
     * **Client**: Seattle Cancer Care Alliance
     * **Project Description**: The American Society of Hematology (ASH) hosts an annual conference in Seattle, 
     Washington. The Seattle Cancer Care Alliance (SCCA) has significant representation at the ASH conference. 
@@ -17,7 +48,7 @@
             * Backend: Theme switching. 
             * Frontend (as seen on the [live site](https://www.seattlecca.org/ash)): Page-level dynamic searching, contextual sticky headers.
 
-* State Firearm Laws [(live site)](https://statefirearmlaws.org/)
+* State Firearm Laws [(live site)](https://statefirearmlaws.org/) - Drupal 8 custom module
     * **Client**: Boston University School of Public Health
     * **Project Description**: A small Drupal 8 site that collects and displays current and historical state firearm laws.
     The maps are created using the [D3.js](https://d3js.org/) data visualization library. 
@@ -30,7 +61,7 @@
             * Backend: json api, config via admin forms, custom form ajax (non-native form ajax methods).
             * Frontend: D3.js. Merging and cross-mapping data sources.
 
-* Healthy People 2020 [(live site)](https://healthypeople.gov/) 
+* Healthy People 2020 [(live site)](https://healthypeople.gov/) - Drupal 7 custom module
     * **Client**: The Office of Disease Prevention and Health Promotion - a division of the U.S. Department of Health 
     and Human Services.
     * **Project Description**: The Office of Disease Prevention and Health Promotion (ODPHP) sets the metrics
@@ -46,11 +77,11 @@
         
                 
 ### Other Projects
-* [Peace First](https://www.peacefirst.org/)
+* [Peace First](https://www.peacefirst.org/) - Drupal 8 site
     * **Description**: A platform that supports young peacemakers by providing tools, resources, and funding for peacemaking projects. 
     * **My role**: Senior Developer.
 
-* [The Southern Theater](https://southerntheater.org/)
+* [The Southern Theater](https://southerntheater.org/) - Laravel site
     * **Description**: A custom Laravel application that includes:
         * A public-facing website with online ticket sales
         * A backend ticketing administration system
@@ -59,7 +90,7 @@
         * Integrations with Stripe, MailChimp, and AWS
     * **My role**: Sole developer. Frontend and backend. Project manager.
 
-* [@TCStreetFood](https://twitter.com/tcstreetfood)
+* [@TCStreetFood](https://twitter.com/tcstreetfood) - Twitter bot
     * **Description**: A Twitter bot that tracks all food trucks in the Minneapolis/St.Paul metro area and posts daily 
     tweets and maps on truck locations.
     Includes Google Maps integration for dynamic maps. This Twitter account has come to be considered the canonical 
@@ -67,11 +98,7 @@
     Originally a vanilla PHP application. Rebuilt in Laravel in 2017.
     * (*Note: Because this is in Minnesota, the feed gets pretty quiet in the winter.*)
     * **My role**: Owner, creator, maintainer, spokesperson. 
-    
-* [PicturePublicHealth](https://picturepublichealth.com/)
-    * **Description**: A stock photo site targeting health-related needs. A Drupal 7 Commerce site. 
-    * **My role**: Senior Developer and Architect.
-    
+        
 * [ochenk.com](http://www.ochenk.com/)
     * My personal, mostly-non-dev, project site. 
     

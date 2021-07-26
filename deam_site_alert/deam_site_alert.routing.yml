@@ -1,0 +1,23 @@
+# Route to get emergency alert block.
+deam_site_alert.alert:
+  path: '[REDACTED]'
+  defaults:
+    _controller: '\Drupal\deam_site_alert\Controller\DEAMBlocksAlertController::getBlockAction'
+  requirements:
+    _permission: 'access content'
+
+deam_site_alert.alert.settings:
+  path: '[REDACTED]'
+  defaults:
+    _form: '\Drupal\deam_site_alert\Form\AlertSettingsForm'
+    _title: 'Site Settings'
+  requirements:
+    _role: 'administrator + developer'
+
+
+deam_site_alert.status:
+  path: '[REDACTED]'
+  defaults:
+    _controller: '\Drupal\deam_site_alert\Controller\DEAMBlocksAlertController::getStatus'
+  requirements:
+    _permission: 'access content'

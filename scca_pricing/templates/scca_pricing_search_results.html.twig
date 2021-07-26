@@ -1,0 +1,17 @@
+<a name="pricing-results"></a>
+
+{% if vars.results %}
+
+  {% include "@molecules/tables/table.twig" with {
+    columns: ["CPT code", "Description", "Price"],
+    rows: vars.results,
+    file: "#",
+
+  } %}
+
+  <div class="pricing-results-count" results-count="{{ vars.results|length }}"></div>
+
+{% endif %}
+
+<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script src="/modules/custom/scca_pricing/js/jquery.tabletoCSV.js"></script>

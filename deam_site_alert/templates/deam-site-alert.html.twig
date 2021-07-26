@@ -1,0 +1,13 @@
+{{ attach_library('deam_site_alert/deam_site_alert.alert') }}
+
+<div class="deam-site-alert {{ alert.type }}">
+  <div class="deam-site-alert__content">
+    <span class="alert-title">{{ alert.title }}</span>
+    <span class="alert-message">{{ alert.message }}</span>
+    <span class="alert-link">{{ alert.link|raw }}</span>
+  </div>
+  <a href="#" class="deam-alert-close">X</a>
+</div>
+
+
+

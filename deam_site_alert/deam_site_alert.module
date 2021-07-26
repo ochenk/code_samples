@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * @file
+ * Main file for deam_site_alert module.
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function deam_site_alert_theme($existing, $type, $theme, $path) {
+  return [
+    'deam-site-alert' => [
+      'variables' => [
+        'alert' => NULL,
+      ],
+      'template' => 'deam-site-alert',
+      'path' => $path . '/templates',
+    ],
+  ];
+}

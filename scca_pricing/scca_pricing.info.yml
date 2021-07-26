@@ -1,0 +1,5 @@
+name: SCCA Pricing
+type: module
+description: Custom module for SCCA Insurance pricing
+core: 8.x
+package: SCCA

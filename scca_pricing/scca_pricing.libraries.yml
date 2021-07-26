@@ -1,0 +1,6 @@
+scca_pricing.csv:
+  js:
+    js/jquery.tabletoCSV.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal

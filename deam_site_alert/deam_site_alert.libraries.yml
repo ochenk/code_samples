@@ -1,0 +1,12 @@
+# Alert.
+deam_site_alert.alert:
+  version: 1.x
+  js:
+    js/deam-site-alert.js: {}
+  css:
+    theme:
+      css/deam-site-alert-theme.css: {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
+

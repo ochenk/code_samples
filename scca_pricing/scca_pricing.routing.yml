@@ -1,0 +1,71 @@
+entity.pricing_item.canonical:
+  path: '[REDACTED]{pricing_item}'
+  defaults:
+    # Calls the view controller, defined in the annotation of the pricing_item entity
+    _entity_view: 'pricing_item'
+    _title: 'Pricing Item'
+  requirements:
+    # Calls the access controller of the entity, $operation 'view'
+    _entity_access: 'pricing_item.view'
+
+entity.pricing_item.collection:
+  path: '[REDACTED]'
+  defaults:
+    # Calls the list controller, defined in the annotation of the pricing_item entity.
+    _entity_list: 'pricing_item'
+    _title: 'Pricing Items List'
+  requirements:
+    # Checks for permission directly.
+    _permission: 'view pricing_item entity'
+
+entity.pricing_item.item_add:
+  path: '[REDACTED]'
+  defaults:
+    # Calls the form.add controller, defined in the pricing_item entity.
+    _entity_form: pricing_item.add
+    _title: 'Add Pricing Item'
+  requirements:
+    _permission: 'add pricing_item entity'
+
+entity.pricing_item.edit_form:
+  path: '[REDACTED]{pricing_item}[REDACTED]'
+  defaults:
+    # Calls the form.edit controller, defined in the pricing_item entity.
+    _entity_form: pricing_item.edit
+    _title: 'Edit Pricing Item'
+  requirements:
+    _permission: 'edit pricing_item entity'
+
+entity.pricing_item.delete_form:
+  path: '[REDACTED]{pricing_item}[REDACTED]'
+  defaults:
+    # Calls the form.delete controller, defined in the pricing_item entity.
+    _entity_form: pricing_item.delete
+    _title: 'Delete Pricing Item'
+  requirements:
+    _permission: 'delete pricing_item entity'
+
+entity.pricing_item.item_settings:
+  path: '[REDACTED]'
+  defaults:
+    _form: '\Drupal\scca_pricing\Form\ItemSettingsForm'
+    _title: 'Pricing Settings'
+  requirements:
+    _permission: 'administer pricing_item entity'
+
+scca_pricing.admin_settings_form:
+  path: '[REDACTED]'
+  defaults:
+    _form: '\Drupal\scca_pricing\Form\UploadPricings'
+    _title: 'Upload Pricings'
+  requirements:
+    _permission: 'administer pricing_item entity'
+  options:
+    _admin_route: TRUE
+
+scca_pricing.search_results:
+  path: '[REDACTED]'
+  defaults:
+    _controller: '\Drupal\scca_pricing\PricingController::searchResults'
+  requirements:
+    _permission: 'access content'
